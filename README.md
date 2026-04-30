@@ -2,17 +2,15 @@
 
 ## 개요
 - C# 프로그래밍 학습
-- 1줄 소개: 선, 사각형, 원을 그리고 이미지 파일로 저장할 수 있는 그림판 프로그램 (Simple Paint)
+- 1줄 소개: 선, 사각형, 원을 그릴 수 있는 그림판(Simple Paint) 앱입니다.
 - 사용한 플랫폼:
   - C#, .NET Windows Forms, Visual Studio, GitHub
 - 사용한 컨트롤:
-  - PictureBox, Button, ComboBox, TrackBar, GroupBox, Label
+  - PictureBox, Button, ComboBox, TrackBar, GroupBox
 - 사용한 기술과 구현한 기능:
   - Visual Studio를 이용한 그림판 UI 디자인 및 명명 규칙을 준수한 컨트롤 배치
   - Bitmap 객체와 Graphics 클래스를 활용한 메모리 캔버스 초기화 및 제어
-  - 열거형(enum)과 switch~case 문을 활용한 다양한 그리기 상태(도형, 색상 등) 관리
-  - 마우스 이벤트(MouseDown, MouseMove, MouseUp)와 Paint 이벤트를 결합한 드래그 기반 그리기 구현
-  - OpenFileDialog 및 SaveFileDialog를 통한 이미지 로드 및 다양한 포맷(.png, .jpg, .bmp) 저장 기능 구현
+  - 마우스 이벤트(MouseDown, MouseMove, MouseUp)와 Paint 이벤트를 활용한 드래그 기반 도형 그리기 및 점선 미리보기 구현
 
 ## 실행 화면 (과제1)
 
@@ -23,12 +21,40 @@
 
 
 
+- 과제 내용
+  - 그림판의 기본 UI 배치 및 도형선택, 색상선택, 선굵기선택 기능 구현
+- 구현 내용과 기능 설명
+  - 화면 중앙에 그림이 그려질 넓은 도화지(캔버스) 영역으로 PictureBox(picCanvas) 컨트롤을 배치했습니다.
+  - 상단 메뉴 영역은 연관된 기능끼리 GroupBox를 활용하여 묶어서 가독성을 높였습니다.
+  - 도형 선택 영역에는 Button 3개(btnLine, btnRectangle, btnCircle)를 배치하여, 직선/사각형/원 그리기 모드를 선택할 수 있도록 구현했습니다.
+  - 색상 선택을 위해 ComboBox(cmbColor)를 배치하고 드롭다운 목록에서 검정, 빨강, 파랑, 녹색을 선택할 수 있게 했으며, 선 두께는 TrackBar(trbLineWidth)를 통해 최소 1부터 최대 10까지 조절할 수 있도록 설정했습니다.
+
+## 실행 화면 (과제2)
+
+
+
+![과제2 실행화면 1](img/2.png)
+
+
+
+![과제2 실행화면 2](img/3.png)
+
+
+
+![과제2 실행화면 2](img/4.png)
+
+
+
+
+![과제2 실행화면 2](img/5.png)
+
+
+
 
 - 과제 내용
-  - 그림판의 기본 UI를 배치하고, 도형 선택, 색상 선택, 선 굵기 선택 기능을 구현합니다.
+  - 마우스 드래그를 이용한 그림 그리기 기능 구현 (직선, 사각형, 원)
 - 구현 내용과 기능 설명
-  - UI 레이아웃 설계: 도화지 역할을 할 PictureBox(picCanvas)를 넓게 배치하고, 상단에는 기능별로 GroupBox를 나누어 묶었습니다.
-  - 컨트롤 명명 규칙 준수: 모든 버튼과 콤보박스, 트랙바 등의 이름을 기본값(button1 등)에서 btnLine, btnRectangle, cmbColor, trbLineWidth 등 의미 있는 이름으로 변경하여 가독성을 높였습니다.
-  - 도형 선택 기능: 3개의 Button을 이용해 직선, 사각형, 원을 선택할 수 있게 하였으며, 클릭 시 ToolType 열거형 변수의 상태가 변경되도록 구현했습니다.
-  - 색상 선택 기능: ComboBox 컨트롤을 이용해 검정, 빨강, 파랑, 녹색 등 4가지 색상을 목록으로 제공하고, SelectedIndexChanged 이벤트를 통해 선택된 색상으로 상태가 업데이트되도록 구현했습니다.
-  - 선 두께 조절 기능: TrackBar 컨트롤을 이용하여 마우스로 스크롤을 움직여 선의 두께를 최소 1에서 최대 10까지 조절할 수 있도록 설정했습니다.
+  - PictureBox의 마우스 이벤트를 연동하여 드래그 기반의 그리기 기능을 구현했습니다. MouseDown 이벤트에서 드래그 시작점의 좌표를 저장하고 그리기 상태를 활성화합니다.
+  - MouseMove 이벤트와 Paint 이벤트를 연동하여, 마우스를 드래그하는 동안 현재 선택된 도형이 점선(DashStyle.Dash) 형태로 캔버스에 미리 그려지도록 '미리보기' 기능을 구현했습니다.
+  - MouseUp 이벤트가 발생하여 마우스를 뗄 때, Graphics 객체와 Pen(선택된 색상 및 굵기 적용)을 사용하여 실제 Bitmap 캔버스 메모리에 직선, 사각형, 원을 확정하여 그리도록 처리했습니다.
+  - 사각형과 원의 경우 마우스를 드래그하는 방향(역방향 등)에 상관없이 정확한 위치와 크기를 계산할 수 있도록 Math.Min과 Math.Abs를 활용한 사각형 면적 계산 로직을 추가했습니다. 두께를 최소 1에서 최대 10까지 조절할 수 있도록 설정했습니다.
