@@ -149,7 +149,7 @@
             // btnOpenFile
             // 
             btnOpenFile.BackColor = Color.CornflowerBlue;
-            btnOpenFile.Location = new Point(720, 137);
+            btnOpenFile.Location = new Point(721, 137);
             btnOpenFile.Name = "btnOpenFile";
             btnOpenFile.Size = new Size(96, 57);
             btnOpenFile.TabIndex = 3;
