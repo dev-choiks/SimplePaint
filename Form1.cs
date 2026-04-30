@@ -19,6 +19,7 @@ namespace SimplePaint
         private ToolType currentTool = ToolType.Line;  // 현재 선택된 도형 
         private Color currentColor = Color.Black;      // 현재 색상
         private int currentLineWidth = 2;              // 현재 선 두께
+        private double zoomFactor = 1.0;               // 확대/축소 비율
 
         public Form1()
         {
@@ -30,25 +31,14 @@ namespace SimplePaint
             canvasGraphics.Clear(Color.White);   // 캔버스를 흰색으로 초기화 
             picCanvas.Image = canvasBitmap;      // 그린 그림을 화면(PictureBox)에 표시
 
-            // 2. 마우스 이벤트 및 Paint 이벤트 연결
-            picCanvas.MouseDown += PicCanvas_MouseDown;
-            picCanvas.MouseMove += PicCanvas_MouseMove;
-            picCanvas.MouseUp += PicCanvas_MouseUp;
-            picCanvas.Paint += PicCanvas_Paint;
+            // 마우스/페인트 이벤트는 디자이너에서 연결됨(InitializeComponent)
 
-            // 3. 도형 선택 버튼 이벤트 연결 
-            btnLine.Click += btnLine_Click;
-            btnRectangle.Click += btnRectangle_Click;
-            btnCircle.Click += btnCircle_Click;
-
-            // 4. 색상 콤보박스 및 선 두께 트랙바 이벤트 연결
-            cmbColor.SelectedIndexChanged += cmbColor_SelectedIndexChanged;
+            // 3. 도형 선택 버튼 및 색상/두께 설정 (이벤트는 디자이너에서 연결됨)
             cmbColor.SelectedIndex = 0;  // 기본값: Black
 
             trbLineWidth.Minimum = 1;    // 최소값 
             trbLineWidth.Maximum = 10;   // 최대값 
             trbLineWidth.Value = 2;
-            trbLineWidth.ValueChanged += trbLineWidth_ValueChanged;
         }
 
 
@@ -57,14 +47,14 @@ namespace SimplePaint
         private void PicCanvas_MouseDown(object sender, MouseEventArgs e)
         {
             isDrawing = true;
-            startPoint = e.Location;
+            startPoint = GetRealCoordinate(e.Location); // 보정된 좌표 저장
         }
 
         // 마우스 이동할 때 (미리보기 화면 갱신) 
         private void PicCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (!isDrawing) return;       // 그림 그리기와 상관 없는 움직임은 무시
-            endPoint = e.Location;        // 현재 위치 갱신 
+            endPoint = GetRealCoordinate(e.Location); // 보정된 좌표 갱신
             picCanvas.Invalidate();       // 화면 다시 그리기 (Paint 이벤트 발생)
         }
 
@@ -73,7 +63,7 @@ namespace SimplePaint
         {
             if (!isDrawing) return;       // 무시 
             isDrawing = false;            // 드래그 종료 
-            endPoint = e.Location;
+            endPoint = GetRealCoordinate(e.Location); // 보정된 좌표 갱신
 
             // 실제 비트맵에 도형 확정 그리기
             using (Pen pen = new Pen(currentColor, currentLineWidth))
@@ -88,12 +78,32 @@ namespace SimplePaint
         {
             if (!isDrawing) return;
 
-            // 점선 펜 (미리보기용)
-            using (Pen previewPen = new Pen(currentColor, currentLineWidth))
+            // 점선 펜 (미리보기용) - 미리보기는 화면 좌표(확대 적용)
+            using (Pen previewPen = new Pen(currentColor, Math.Max(1, (int)(currentLineWidth * zoomFactor))))
             {
                 previewPen.DashStyle = DashStyle.Dash;
-                DrawShape(e.Graphics, previewPen, startPoint, endPoint);
+                // 캔버스 좌표(startPoint/endPoint)는 비트맵 기준이므로 확대 비율을 적용
+                Point sp = new Point((int)(startPoint.X * zoomFactor), (int)(startPoint.Y * zoomFactor));
+                Point ep = new Point((int)(endPoint.X * zoomFactor), (int)(endPoint.Y * zoomFactor));
+                DrawShape(e.Graphics, previewPen, sp, ep);
             }
+        }
+
+        // 마우스 좌표(픽셀)를 비트맵상의 실제 좌표로 변환
+        private Point GetRealCoordinate(Point mouseLocation)
+        {
+            return new Point((int)(mouseLocation.X / zoomFactor), (int)(mouseLocation.Y / zoomFactor));
+        }
+
+        // 확대/축소 적용
+        private void ApplyZoom()
+        {
+            if (canvasBitmap == null) return;
+            // PictureBox 크기를 비트맵 크기에 확대 비율을 적용하여 설정
+            picCanvas.Width = (int)(canvasBitmap.Width * zoomFactor);
+            picCanvas.Height = (int)(canvasBitmap.Height * zoomFactor);
+            // PictureBox에 표시되는 이미지는 StretchImage 모드에서 PictureBox 크기에 맞춰 그려진다
+            picCanvas.Invalidate();
         }
 
         // 선택된 도형을 그리는 통합 함수
@@ -115,8 +125,55 @@ namespace SimplePaint
             }
         }
 
-        // 두 점으로부터 사각형의 위치와 크기(Rectangle 객체)를 계산하는 함수
+        private void btnOpenFile_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "이미지 불러오기";
+                openFileDialog.Filter = "이미지 파일 (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|모든 파일 (*.*)|*.*";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    Image loadedImage = Image.FromFile(openFileDialog.FileName);
+
+                    // 기존 리소스 정리
+                    if (canvasGraphics != null) canvasGraphics.Dispose();
+                    if (canvasBitmap != null) canvasBitmap.Dispose();
+
+                    // 불러온 이미지를 캔버스로 사용
+                    canvasBitmap = new Bitmap(loadedImage);
+                    canvasGraphics = Graphics.FromImage(canvasBitmap);
+
+                    // PictureBox 크기를 이미지 크기에 맞추고 표시
+                    zoomFactor = 1.0;
+                    picCanvas.SizeMode = PictureBoxSizeMode.StretchImage;
+                    picCanvas.Image = canvasBitmap;
+                    ApplyZoom();
+                }
+            }
+        }
+
+        private void btnZoomIn_Click(object sender, EventArgs e)
+        {
+            zoomFactor += 0.2;
+            ApplyZoom();
+        }
+
+        private void btnZoomOut_Click(object sender, EventArgs e)
+        {
+            if (zoomFactor > 0.4)
+            {
+                zoomFactor -= 0.2;
+                ApplyZoom();
+            }
+        }
+
+        private void trbLineWidth_ValueChanged(object sender, EventArgs e)
+        {
+            currentLineWidth = trbLineWidth.Value;
+        }
         private Rectangle GetRectangle(Point p1, Point p2)
+        // 두 점으로부터 사각형의 위치와 크기(Rectangle 객체)를 계산하는 함수
         {
             return new Rectangle(
                 Math.Min(p1.X, p2.X),
@@ -177,27 +234,12 @@ namespace SimplePaint
             }
         }
 
-        private void trbLineWidth_ValueChanged(object sender, EventArgs e)
-        {
-            currentLineWidth = trbLineWidth.Value;
-        }
 
-        private void picCanvas_MouseUp(object sender, MouseEventArgs e)
-        {
+        
 
-        }
+        // Designer-level handlers were removed in favor of PicCanvas_* methods above.
 
-        private void picCanvas_MouseDown(object sender, MouseEventArgs e)
-        {
-
-        }
-
-        private void picCanvas_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void btnOpenFile_Click(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
 
         }

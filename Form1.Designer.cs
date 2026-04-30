@@ -40,11 +40,15 @@
             btnOpenFile = new Button();
             btnSaveFile = new Button();
             picCanvas = new PictureBox();
+            btnZoomOut = new Button();
+            btnZoomIn = new Button();
+            pnlPaint = new Panel();
             grbTool.SuspendLayout();
             grbColor.SuspendLayout();
             grbSize.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trbLineWidth).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picCanvas).BeginInit();
+            pnlPaint.SuspendLayout();
             SuspendLayout();
             // 
             // lblAppName
@@ -153,7 +157,8 @@
             // btnOpenFile
             // 
             btnOpenFile.BackColor = Color.CornflowerBlue;
-            btnOpenFile.Location = new Point(721, 137);
+            btnOpenFile.Font = new Font("한컴 말랑말랑 Bold", 8.999999F, FontStyle.Bold);
+            btnOpenFile.Location = new Point(721, 108);
             btnOpenFile.Name = "btnOpenFile";
             btnOpenFile.Size = new Size(96, 57);
             btnOpenFile.TabIndex = 3;
@@ -164,7 +169,8 @@
             // btnSaveFile
             // 
             btnSaveFile.BackColor = Color.Coral;
-            btnSaveFile.Location = new Point(825, 137);
+            btnSaveFile.Font = new Font("한컴 말랑말랑 Bold", 8.999999F, FontStyle.Bold);
+            btnSaveFile.Location = new Point(825, 108);
             btnSaveFile.Name = "btnSaveFile";
             btnSaveFile.Size = new Size(96, 57);
             btnSaveFile.TabIndex = 4;
@@ -176,23 +182,58 @@
             // 
             picCanvas.BackgroundImageLayout = ImageLayout.None;
             picCanvas.Image = Properties.Resources.background;
-            picCanvas.Location = new Point(17, 226);
+            picCanvas.Location = new Point(1, 0);
             picCanvas.Name = "picCanvas";
-            picCanvas.Size = new Size(904, 404);
+            picCanvas.Size = new Size(901, 404);
             picCanvas.SizeMode = PictureBoxSizeMode.StretchImage;
             picCanvas.TabIndex = 5;
             picCanvas.TabStop = false;
-            picCanvas.Paint += picCanvas_Paint;
-            picCanvas.MouseDown += picCanvas_MouseDown;
-            picCanvas.MouseMove += picCanvas_MouseDown;
-            picCanvas.MouseUp += picCanvas_MouseUp;
+            picCanvas.Paint += PicCanvas_Paint;
+            picCanvas.MouseDown += PicCanvas_MouseDown;
+            picCanvas.MouseMove += PicCanvas_MouseMove;
+            picCanvas.MouseUp += PicCanvas_MouseUp;
+            // 
+            // btnZoomOut
+            // 
+            btnZoomOut.BackColor = Color.DarkGoldenrod;
+            btnZoomOut.Font = new Font("한컴 말랑말랑 Bold", 8.999999F, FontStyle.Bold);
+            btnZoomOut.Location = new Point(826, 171);
+            btnZoomOut.Name = "btnZoomOut";
+            btnZoomOut.Size = new Size(96, 42);
+            btnZoomOut.TabIndex = 7;
+            btnZoomOut.Text = "축소";
+            btnZoomOut.UseVisualStyleBackColor = false;
+            btnZoomOut.Click += btnZoomOut_Click;
+            // 
+            // btnZoomIn
+            // 
+            btnZoomIn.BackColor = Color.DarkCyan;
+            btnZoomIn.Font = new Font("한컴 말랑말랑 Bold", 8.999999F, FontStyle.Bold);
+            btnZoomIn.Location = new Point(722, 171);
+            btnZoomIn.Name = "btnZoomIn";
+            btnZoomIn.Size = new Size(96, 42);
+            btnZoomIn.TabIndex = 6;
+            btnZoomIn.Text = "확대";
+            btnZoomIn.UseVisualStyleBackColor = false;
+            btnZoomIn.Click += btnZoomIn_Click;
+            // 
+            // pnlPaint
+            // 
+            pnlPaint.AutoScroll = true;
+            pnlPaint.Controls.Add(picCanvas);
+            pnlPaint.Location = new Point(17, 224);
+            pnlPaint.Name = "pnlPaint";
+            pnlPaint.Size = new Size(904, 407);
+            pnlPaint.TabIndex = 8;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(936, 642);
-            Controls.Add(picCanvas);
+            Controls.Add(pnlPaint);
+            Controls.Add(btnZoomOut);
+            Controls.Add(btnZoomIn);
             Controls.Add(btnSaveFile);
             Controls.Add(btnOpenFile);
             Controls.Add(grbSize);
@@ -201,12 +242,14 @@
             Controls.Add(lblAppName);
             Name = "Form1";
             Text = "SimplePaint v1.0";
+            Load += Form1_Load;
             grbTool.ResumeLayout(false);
             grbColor.ResumeLayout(false);
             grbSize.ResumeLayout(false);
             grbSize.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)trbLineWidth).EndInit();
             ((System.ComponentModel.ISupportInitialize)picCanvas).EndInit();
+            pnlPaint.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -225,5 +268,8 @@
         private Button btnOpenFile;
         private Button btnSaveFile;
         private PictureBox picCanvas;
+        private Button btnZoomOut;
+        private Button btnZoomIn;
+        private Panel pnlPaint;
     }
 }
